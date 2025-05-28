@@ -1,4 +1,3 @@
-// src/lib/sensay.ts
 import axios from "axios";
 
 const SENSAY_API_BASE = "https://api.sensay.io/v1";
