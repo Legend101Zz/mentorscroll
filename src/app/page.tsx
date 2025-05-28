@@ -1,118 +1,95 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//@ts-nocheck
-"use client"
 
-import { useState, useEffect, useRef } from 'react';
+"use client";
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
-import { FaSearch, FaBell, FaChevronRight, FaPlay, FaArrowUp, FaArrowDown, FaArrowLeft, FaArrowRight, FaUsers, FaClock, FaStar, FaCompass, FaGraduationCap, FaRegLightbulb, FaBrain, FaInfinity, FaRandom, FaShareAlt } from 'react-icons/fa';
+import {
+  FaSearch, FaBell, FaChevronRight, FaPlay, FaUsers,
+  FaClock, FaStar, FaCompass, FaGraduationCap,
+  FaRegLightbulb, FaBrain, FaInfinity, FaRandom,
+  FaShareAlt, FaRobot, FaHandSparkles
+} from 'react-icons/fa';
 import ReelsDeck from '@/components/ReelsDeck';
 import { deckReels } from '@/data/deckReels';
+import { EXPERT_CONFIGS } from '@/data/experts';
+import { contentGenerator } from '@/lib/contentGenerator';
 
-// Enhanced trending reels with more detailed data
+// Enhanced trending reels with MentorScroll branding
 const trendingReels = [
   {
-    id: 'reel1',
-    title: 'Black Holes Explained',
-    subtitle: 'Mind-bending concepts in 60 seconds',
+    id: 'mentorscroll-demo-1',
+    title: '🧠 Your Brain on MentorScroll',
+    subtitle: 'The neuroscience of guilt-free learning',
     color: 'from-[#8f46c1] to-[#a0459b]',
     image: '/test.jpeg',
-    author: 'Dr. Alex Chen',
-    views: '12.5k',
-    duration: '60 sec'
-  },
-  {
-    id: 'reel2',
-    title: 'Inner Peace',
-    subtitle: 'Quick meditation technique to try now',
-    color: 'from-[#a0459b] to-[#bd4580]',
-    image: '/test.jpeg',
-    author: 'Maya Wilson',
-    views: '9.8k',
+    author: 'Dr. Mind',
+    views: '2.8M',
     duration: '45 sec'
   },
   {
-    id: 'reel3',
-    title: 'Quantum Physics',
-    subtitle: 'Wave-particle duality simplified',
+    id: 'mentorscroll-demo-2',
+    title: '🚀 From TikTok to Einstein',
+    subtitle: 'How micro-learning builds genius minds',
+    color: 'from-[#a0459b] to-[#bd4580]',
+    image: '/test.jpeg',
+    author: 'Prof. Timeline',
+    views: '1.9M',
+    duration: '60 sec'
+  },
+  {
+    id: 'mentorscroll-demo-3',
+    title: '⚡ The 8-Second Attention Revolution',
+    subtitle: 'Turning short attention spans into superpowers',
     color: 'from-[#bd4580] to-[#d56f66]',
     image: '/test.jpeg',
-    author: 'Prof. James Liu',
-    views: '11.2k',
-    duration: '55 sec'
+    author: 'Dr. Quantum',
+    views: '3.4M',
+    duration: '30 sec'
   }
 ];
 
-// Platform features with enhanced design
+// Platform features with enhanced MentorScroll messaging
 const platformFeatures = [
   {
-    title: "Bite-sized Learning",
-    description: "Master complex topics in 60-second looping clips",
-    icon: <FaClock className="text-2xl" />,
+    title: "AI Expert Conversations",
+    description: "Chat directly with specialized AI replicas trained on expert knowledge",
+    icon: <FaRobot className="text-2xl" />,
     color: "from-[#8f46c1] to-[#a0459b]"
   },
   {
-    title: "Infinite Loops",
-    description: "Clips automatically loop for better retention",
-    icon: <FaInfinity className="text-2xl" />,
+    title: "Guilt-Free Scrolling",
+    description: "Transform mindless scrolling into mindful learning experiences",
+    icon: <FaBrain className="text-2xl" />,
     color: "from-[#a0459b] to-[#bd4580]"
   },
   {
-    title: "Smart Sharing",
-    description: "Share knowledge clips with friends and study groups",
-    icon: <FaShareAlt className="text-2xl" />,
+    title: "Real-Time Content Generation",
+    description: "Personalized educational content created by AI experts in real-time",
+    icon: <FaHandSparkles className="text-2xl" />,
     color: "from-[#bd4580] to-[#d56f66]"
-  }
-];
-
-// Categories with enhanced design
-const categories = [
-  {
-    name: "Physics",
-    color: "from-[#8f46c1] to-[#a0459b]",
-    icon: "🔭",
-    clips: 42
-  },
-  {
-    name: "History",
-    color: "from-[#a0459b] to-[#bd4580]",
-    icon: "📜",
-    clips: 38
-  },
-  {
-    name: "Psychology",
-    color: "from-[#bd4580] to-[#c85975]",
-    icon: "🧠",
-    clips: 27
-  },
-  {
-    name: "Technology",
-    color: "from-[#c85975] to-[#d56f66]",
-    icon: "💻",
-    clips: 64
   }
 ];
 
 // The benefit stats for guilt-free section
 const scrollBenefits = [
   {
-    value: '85%',
-    label: 'Knowledge Retention',
+    value: '340%',
+    label: 'Learning Engagement',
     color: 'text-[#8f46c1]',
     icon: <FaBrain className="text-lg" />
   },
   {
-    value: '3x',
-    label: 'Learning Efficiency',
+    value: '8sec',
+    label: 'To Expert Insights',
     color: 'text-[#a0459b]',
-    icon: <FaGraduationCap className="text-lg" />
+    icon: <FaClock className="text-lg" />
   },
   {
-    value: '-32%',
-    label: 'Mindless Scrolling',
+    value: '0%',
+    label: 'Scroll Guilt',
     color: 'text-[#d56f66]',
-    icon: <FaClock className="text-lg" />
+    icon: <FaGraduationCap className="text-lg" />
   }
 ];
 
@@ -139,94 +116,37 @@ const itemVariants = {
   }
 };
 
-const cardVariants = {
-  initial: { scale: 0.9, rotate: -5, opacity: 0 },
-  animate: (i) => ({
-    scale: 1,
-    rotate: i % 2 === 0 ? -2 : 2,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 20,
-      delay: i * 0.1
-    }
-  }),
-  hover: {
-    scale: 1.05,
-    rotate: 0,
-    zIndex: 10,
-    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-    transition: {
-      type: "spring",
-      stiffness: 400,
-      damping: 10
-    }
-  },
-  tap: {
-    scale: 0.98,
-    rotate: 0
-  },
-  exit: (i) => ({
-    x: i % 2 === 0 ? -1000 : 1000,
-    opacity: 0,
-    transition: { duration: 0.5 }
-  })
-};
-
-// Enhanced shimmer effect
-const shimmer = {
-  hidden: { x: -100, opacity: 0 },
-  visible: {
-    x: 300,
-    opacity: 1,
-    transition: {
-      repeat: Infinity,
-      duration: 1.5,
-      ease: "linear"
-    }
-  }
-};
-
 export default function HomePage() {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [swipeDirection, setSwipeDirection] = useState(null);
-  const cardsControls = useAnimation();
-  const cardsRef = useRef();
+  const [expertStats, setExpertStats] = useState({ count: 0, topics: 0 });
+  const [isGeneratingContent, setIsGeneratingContent] = useState(false);
 
   useEffect(() => {
-    // Simulate loading completion
-    const timer = setTimeout(() => setIsLoaded(true), 800);
+    // Simulate loading completion and get expert stats
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+      setExpertStats({
+        count: EXPERT_CONFIGS.length,
+        topics: EXPERT_CONFIGS.reduce((total, expert) => total + expert.sampleTopics.length, 0)
+      });
+    }, 800);
+
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle card swipe
-  const handleSwipe = (direction) => {
-    setSwipeDirection(direction);
-
-    cardsControls.start({
-      x: direction === 'left' ? -300 : 300,
-      opacity: 0,
-      transition: { duration: 0.5 }
-    }).then(() => {
-      setCurrentCardIndex((prev) =>
-        direction === 'left'
-          ? (prev + 1) % trendingReels.length
-          : (prev - 1 + trendingReels.length) % trendingReels.length
-      );
-      cardsControls.set({ x: 0, opacity: 1 });
-      setSwipeDirection(null);
-    });
-  };
-
-  // Handle drag end for swipe
-  const handleDragEnd = (event, info) => {
-    const threshold = 100;
-    if (info.offset.x < -threshold) {
-      handleSwipe('left');
-    } else if (info.offset.x > threshold) {
-      handleSwipe('right');
+  // Function to generate fresh content (for demo purposes)
+  const generateFreshContent = async () => {
+    setIsGeneratingContent(true);
+    try {
+      await contentGenerator.initialize();
+      // In a real app, you'd update the reels with new generated content
+      setTimeout(() => {
+        setIsGeneratingContent(false);
+        // Show success message or update UI
+      }, 3000);
+    } catch (error) {
+      console.error('Content generation failed:', error);
+      setIsGeneratingContent(false);
     }
   };
 
@@ -260,19 +180,6 @@ export default function HomePage() {
           }}
           style={{ bottom: '10%', right: '10%' }}
         />
-        <motion.div
-          className="absolute w-64 h-64 rounded-full bg-[#a0459b]/10 blur-3xl"
-          animate={{
-            x: [0, 20, 0],
-            y: [0, -30, 0],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            repeatType: "reverse"
-          }}
-          style={{ top: '40%', right: '25%' }}
-        />
       </div>
 
       {/* Initial Loading Animation */}
@@ -293,12 +200,17 @@ export default function HomePage() {
                 type: "spring",
                 stiffness: 200
               }}
+              className="text-center"
             >
-              <div className="w-20 h-20 bg-gradient-to-tr from-[#8f46c1] to-[#d56f66] rounded-full flex items-center justify-center">
-                <span className="text-3xl font-bold text-white">K</span>
+              <div className="w-20 h-20 bg-gradient-to-tr from-[#8f46c1] to-[#d56f66] rounded-full flex items-center justify-center mb-4 mx-auto">
+                <span className="text-3xl font-bold text-white">M</span>
               </div>
+              <h2 className="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-[#8f46c1] to-[#d56f66]">
+                MentorScroll
+              </h2>
+              <p className="text-white/60 mb-4">Initializing AI Experts...</p>
               <motion.div
-                className="h-1 bg-white/20 rounded-full mt-4 w-32"
+                className="h-1 bg-white/20 rounded-full w-32 mx-auto"
                 initial={{ width: 0 }}
                 animate={{ width: 128 }}
                 transition={{ duration: 0.8 }}
@@ -328,16 +240,21 @@ export default function HomePage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <span className="text-xl font-bold">K</span>
+            <span className="text-xl font-bold">M</span>
           </motion.div>
-          <motion.h1
-            className="ml-3 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#8f46c1] to-[#d56f66] hidden md:block"
+          <motion.div
+            className="ml-3"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
-            KnowScroll
-          </motion.h1>
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#8f46c1] to-[#d56f66] hidden md:block">
+              MentorScroll
+            </h1>
+            <p className="text-xs text-white/60 hidden md:block">
+              Guilt-Free Learning Platform
+            </p>
+          </motion.div>
         </div>
 
         <div className="flex items-center space-x-4">
@@ -348,23 +265,30 @@ export default function HomePage() {
           >
             <FaSearch className="text-lg" />
           </motion.button>
-          <motion.div
-            className="relative"
-            whileHover={{ scale: 1.1 }}
+
+          <motion.button
+            className="px-4 py-2 bg-gradient-to-r from-[#8f46c1] to-[#d56f66] rounded-full text-sm font-medium"
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={generateFreshContent}
+            disabled={isGeneratingContent}
           >
-            <motion.div
-              className="absolute -top-1 -right-1 w-2 h-2 bg-[#d56f66] rounded-full"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 1, type: "spring" }}
-            />
-            <motion.button
-              className="w-10 h-10 bg-white/5 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10"
-            >
-              <FaBell className="text-lg" />
-            </motion.button>
-          </motion.div>
+            {isGeneratingContent ? (
+              <div className="flex items-center">
+                <motion.div
+                  className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full mr-2"
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                />
+                Generating...
+              </div>
+            ) : (
+              <>
+                <FaHandSparkles className="inline mr-2" />
+                Generate Content
+              </>
+            )}
+          </motion.button>
         </div>
       </motion.header>
 
@@ -383,26 +307,48 @@ export default function HomePage() {
             transition={{ delay: 0.6 }}
           >
             <span className="block mb-2">
-              Short, Looping Clips
+              Transform Mindless Scrolling
             </span>
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#8f46c1] to-[#d56f66]">
-              That Make You Smarter
+              Into Expert Knowledge
             </span>
           </motion.h2>
+
           <motion.p
-            className="text-lg md:text-xl text-white/70 mb-8 max-w-xl"
+            className="text-lg md:text-xl text-white/70 mb-6 max-w-2xl"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.8 }}
           >
-            KnowScroll is a video-sharing platform for educational content that transforms complex topics into bite-sized, looping clips that stick in your mind.
+            MentorScroll uses AI expert replicas to turn your 2.5 hours of daily scrolling into a personalized learning journey. Same addictive experience, zero guilt.
           </motion.p>
+
+          {/* Stats Row */}
+          <motion.div
+            className="flex flex-wrap justify-center md:justify-start gap-6 mb-8"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 1 }}
+          >
+            <div className="text-center">
+              <div className="text-2xl font-bold text-[#8f46c1]">{expertStats.count}</div>
+              <div className="text-sm text-white/60">AI Experts</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-[#a0459b]">{expertStats.topics}+</div>
+              <div className="text-sm text-white/60">Topics</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-[#d56f66]">∞</div>
+              <div className="text-sm text-white/60">Personalized Content</div>
+            </div>
+          </motion.div>
 
           <motion.div
             className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 justify-center md:justify-start"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1 }}
+            transition={{ delay: 1.2 }}
           >
             <Link href="/feed">
               <motion.div
@@ -410,7 +356,7 @@ export default function HomePage() {
                 whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(143, 70, 193, 0.4)" }}
                 whileTap={{ scale: 0.98 }}
               >
-                <span>Start Scrolling</span>
+                <span>Start Learning</span>
                 <motion.span
                   initial={{ x: 0, opacity: 0 }}
                   whileHover={{ x: 5, opacity: 1 }}
@@ -420,6 +366,7 @@ export default function HomePage() {
                 </motion.span>
               </motion.div>
             </Link>
+
             <motion.button
               className="px-8 py-3 bg-white/5 backdrop-blur-md rounded-full font-semibold text-white shadow-lg border border-white/10"
               whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.1)" }}
@@ -445,9 +392,9 @@ export default function HomePage() {
           >
             <div className="flex items-center">
               <div className="w-6 h-6 bg-gradient-to-r from-[#8f46c1] to-[#d56f66] rounded-full flex items-center justify-center mr-2">
-                <FaPlay className="text-xs text-white" />
+                <FaRobot className="text-xs text-white" />
               </div>
-              <h3 className="text-xl font-bold">What Makes KnowScroll Special</h3>
+              <h3 className="text-xl font-bold">Powered by Sensay AI Experts</h3>
             </div>
           </motion.div>
 
@@ -456,7 +403,7 @@ export default function HomePage() {
               <motion.div
                 key={i}
                 variants={itemVariants}
-                className={`bg-gradient-to-br ${feature.color} bg-opacity-20 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-colors`}
+                className={`bg-gradient-to-br ${feature.color} bg-opacity-20 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-colors relative overflow-hidden group`}
                 whileHover={{
                   y: -5,
                   boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3)",
@@ -468,6 +415,50 @@ export default function HomePage() {
                 </div>
                 <h4 className="text-xl font-semibold mb-2">{feature.title}</h4>
                 <p className="text-white/70">{feature.description}</p>
+
+                {/* Animated background effect */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "100%" }}
+                  transition={{ duration: 0.6 }}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* AI Expert Showcase */}
+        <motion.section
+          variants={containerVariants}
+          initial="hidden"
+          animate={isLoaded ? "visible" : "hidden"}
+          className="mb-16"
+        >
+          <motion.div
+            variants={itemVariants}
+            className="text-center mb-8"
+          >
+            <h3 className="text-2xl font-bold mb-2">Meet Your AI Mentors</h3>
+            <p className="text-white/70">Each expert is trained on specialized knowledge and has a unique personality</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {EXPERT_CONFIGS.map((expert, i) => (
+              <motion.div
+                key={expert.slug}
+                variants={itemVariants}
+                className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10 hover:border-white/20 transition-all text-center group"
+                whileHover={{ y: -5, backgroundColor: "rgba(255,255,255,0.1)" }}
+              >
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 mx-auto mb-3 flex items-center justify-center">
+                  <FaRobot className="text-white text-lg" />
+                </div>
+                <h4 className="font-semibold mb-1">{expert.name}</h4>
+                <p className="text-xs text-white/70 mb-2">{expert.domain}</p>
+                <div className="text-xs bg-white/10 rounded-full px-2 py-1">
+                  {expert.sampleTopics.length} topics
+                </div>
               </motion.div>
             ))}
           </div>
@@ -488,95 +479,31 @@ export default function HomePage() {
               <div className="w-6 h-6 bg-gradient-to-r from-[#8f46c1] to-[#d56f66] rounded-full flex items-center justify-center mr-2">
                 <FaRandom className="text-xs text-white" />
               </div>
-              <h3 className="text-xl font-bold">Trending Loops</h3>
+              <h3 className="text-xl font-bold">Interactive Learning Deck</h3>
             </div>
             <Link href="/feed">
               <motion.div
                 className="flex items-center text-sm text-white/70 hover:text-white"
                 whileHover={{ x: 3 }}
               >
-                View All <FaChevronRight className="ml-1 text-xs" />
+                Explore All <FaChevronRight className="ml-1 text-xs" />
               </motion.div>
             </Link>
           </motion.div>
 
           <div className="relative flex justify-center">
-            <ReelsDeck reels={deckReels} initialIndex={Math.floor(Math.random() * deckReels.length)} />
+            <ReelsDeck reels={deckReels} initialIndex={0} />
           </div>
         </motion.section>
 
-        {/* Multi-dimensional Navigation Section */}
-        <section className="relative mb-20">
-          <motion.div
-            className="max-w-5xl mx-auto px-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <motion.div
-              className="text-center mb-10"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="text-2xl md:text-3xl font-bold mb-2">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8f46c1] to-[#d56f66]">
-                  Multi-Dimensional
-                </span> Video Navigation
-              </h2>
-              <p className="text-white/70 max-w-xl mx-auto">
-                Our unique navigation system lets you explore looping clips in ways you&apos;ve never seen before
-              </p>
-            </motion.div>
-
-            {/* Navigation methods */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              {/* Vertical Navigation */}
-              <NavigationMethod
-                title="Series Progression"
-                description="Episode by episode learning journey"
-                direction="vertical"
-                color="#8f46c1"
-                gradientFrom="from-[#8f46c1]/20"
-                gradientTo="to-transparent"
-                borderColor="border-[#8f46c1]/30"
-              />
-
-              {/* Horizontal Navigation */}
-              <NavigationMethod
-                title="Alternate Perspectives"
-                description="Different angles on the same topic"
-                direction="horizontal"
-                color="#a0459b"
-                gradientFrom="from-[#a0459b]/20"
-                gradientTo="to-transparent"
-                borderColor="border-[#a0459b]/30"
-              />
-
-              {/* Social Navigation */}
-              <NavigationMethod
-                title="Squad Huddles"
-                description="Collaborative learning discussions"
-                direction="social"
-                color="#d56f66"
-                gradientFrom="from-[#d56f66]/20"
-                gradientTo="to-transparent"
-                borderColor="border-[#d56f66]/30"
-              />
-            </div>
-          </motion.div>
-        </section>
-
-        {/* Guilt-Free Scrolling Section */}
+        {/* Guilt-Free Learning Benefits */}
         <section className="relative mb-24">
           <div className="max-w-5xl mx-auto px-6">
             <div className="relative overflow-hidden rounded-3xl">
-              {/* Background effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#0c0612] to-[#1a1522] border border-white/10" />
 
               <div className="relative p-8 md:p-12">
                 <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-center">
-                  {/* Left column - text content */}
                   <div className="md:w-1/2">
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
@@ -588,15 +515,15 @@ export default function HomePage() {
                           <FaRegLightbulb className="text-xl" />
                         </div>
                         <h2 className="text-2xl md:text-3xl font-bold">
-                          Loops That <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8f46c1] to-[#d56f66]">Teach</span>
+                          Scrolling That <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8f46c1] to-[#d56f66]">Actually Works</span>
                         </h2>
                       </div>
 
                       <p className="text-white/70 mb-8 text-lg">
-                        Our short, looping clips turn mindless scrolling into meaningful learning moments. Each loop reinforces concepts for better retention.
+                        MentorScroll transforms the psychology of social media into a learning superpower. Same dopamine hits, but every scroll builds genuine expertise.
                       </p>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                      <div className="grid grid-cols-3 gap-4 mb-8">
                         {scrollBenefits.map((benefit, i) => (
                           <motion.div
                             key={i}
@@ -610,87 +537,48 @@ export default function HomePage() {
                               <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-2">
                                 {benefit.icon}
                               </div>
-                              <p className={`text-2xl font-bold ${benefit.color}`}>{benefit.value}</p>
                             </div>
+                            <p className={`text-2xl font-bold ${benefit.color}`}>{benefit.value}</p>
                             <p className="text-sm text-white/70">{benefit.label}</p>
                           </motion.div>
                         ))}
                       </div>
 
-                      <motion.button
-                        className="px-6 py-3 bg-gradient-to-r from-[#8f46c1] to-[#d56f66] rounded-full text-white font-medium"
-                        whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(143, 70, 193, 0.4)" }}
-                        whileTap={{ scale: 0.95 }}
+                      <motion.div
+                        className="flex space-x-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
                       >
-                        Start Looping
-                      </motion.button>
+                        <Link href="/feed">
+                          <motion.button
+                            className="px-6 py-3 bg-gradient-to-r from-[#8f46c1] to-[#d56f66] rounded-full text-white font-medium"
+                            whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(143, 70, 193, 0.4)" }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            Try MentorScroll
+                          </motion.button>
+                        </Link>
+
+                        <motion.button
+                          className="px-6 py-3 bg-white/10 backdrop-blur-md rounded-full text-white font-medium border border-white/20"
+                          whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.2)" }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Learn More
+                        </motion.button>
+                      </motion.div>
                     </motion.div>
                   </div>
 
-                  {/* Right column - visualization */}
                   <div className="md:w-1/2">
-                    <ComparisonVisual />
+                    <ScrollComparisonVisual />
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </section>
-
-        {/* Categories Section
-        <motion.section
-          variants={containerVariants}
-          initial="hidden"
-          animate={isLoaded ? "visible" : "hidden"}
-          className="mb-24"
-        >
-          <motion.div
-            variants={itemVariants}
-            className="flex justify-between items-center mb-6"
-          >
-            <h3 className="text-xl font-bold">Browse Categories</h3>
-            <Link href="/categories">
-              <motion.div
-                className="flex items-center text-sm text-white/70 hover:text-white"
-                whileHover={{ x: 3 }}
-              >
-                View All <FaChevronRight className="ml-1 text-xs" />
-              </motion.div>
-            </Link>
-          </motion.div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {categories.map((category, i) => (
-              <motion.div
-                key={i}
-                variants={itemVariants}
-                className={`rounded-xl overflow-hidden h-36 bg-gradient-to-r ${category.color} relative border border-white/10`}
-                whileHover={{
-                  y: -5,
-                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3)",
-                  scale: 1.02
-                }}
-              >
-                <div className="absolute inset-0 flex items-center justify-center text-5xl">
-                  {category.icon}
-                </div>
-
-                <div className="absolute bottom-0 inset-x-0 p-4">
-                  <h4 className="font-semibold text-lg">{category.name}</h4>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/70">{category.clips} video loops</span>
-                    <motion.div
-                      className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center"
-                      whileHover={{ backgroundColor: "rgba(255,255,255,0.2)", scale: 1.1 }}
-                    >
-                      <FaChevronRight className="text-xs" />
-                    </motion.div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section> */}
       </main>
 
       {/* Navigation */}
@@ -720,11 +608,8 @@ export default function HomePage() {
             whileHover={{ scale: 1.1, color: "#d56f66" }}
             whileTap={{ scale: 0.95 }}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <polygon points="10 8 16 12 10 16 10 8" />
-            </svg>
-            <span className="text-xs mt-1">Loops</span>
+            <FaBrain className="text-xl" />
+            <span className="text-xs mt-1">Learn</span>
           </motion.div>
         </Link>
 
@@ -734,10 +619,7 @@ export default function HomePage() {
             whileHover={{ scale: 1.1, boxShadow: "0 10px 25px -5px rgba(143, 70, 193, 0.5)" }}
             whileTap={{ scale: 0.95 }}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
+            <FaHandSparkles className="text-xl" />
           </motion.div>
         </Link>
 
@@ -747,10 +629,7 @@ export default function HomePage() {
             whileHover={{ scale: 1.1, color: "#d56f66" }}
             whileTap={{ scale: 0.95 }}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
+            <FaCompass className="text-xl" />
             <span className="text-xs mt-1">Explore</span>
           </motion.div>
         </Link>
@@ -761,18 +640,7 @@ export default function HomePage() {
             whileHover={{ scale: 1.1, color: "#d56f66" }}
             whileTap={{ scale: 0.95 }}
           >
-            <div className="relative">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <motion.div
-                className="absolute -top-1 -right-1 w-2 h-2 bg-[#d56f66] rounded-full"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 1.5, type: "spring" }}
-              />
-            </div>
+            <FaUsers className="text-xl" />
             <span className="text-xs mt-1">Profile</span>
           </motion.div>
         </Link>
@@ -781,299 +649,8 @@ export default function HomePage() {
   );
 }
 
-// Navigation method visualization component
-function NavigationMethod({ title, description, direction, color, gradientFrom, gradientTo, borderColor }) {
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <motion.div
-      className={`rounded-xl overflow-hidden relative bg-gradient-to-br ${gradientFrom} ${gradientTo} border ${borderColor} h-80 md:h-72`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      whileHover={{ y: -5 }}
-    >
-      <div className="absolute inset-0 flex items-center justify-center p-4">
-        <svg width="200" height="200" viewBox="0 0 200 200">
-          {/* Base phone outline */}
-          <rect
-            x="60"
-            y="20"
-            width="80"
-            height="160"
-            rx="10"
-            fill="#121212"
-            stroke="#333"
-            strokeWidth="2"
-          />
-          <rect
-            x="65"
-            y="25"
-            width="70"
-            height="150"
-            rx="5"
-            fill="#0A0A0A"
-          />
-
-          {/* Video icon in center of screen */}
-          <circle cx="100" cy="90" r="5" fill={color} opacity="0.5" />
-          <rect x="95" y="85" width="10" height="10" rx="2" fill={color} opacity="0.8" />
-
-          {/* Screen content based on direction */}
-          {direction === "vertical" && (
-            <>
-              <motion.path
-                d="M100 55 L100 35"
-                stroke={color}
-                strokeWidth="4"
-                strokeLinecap="round"
-                animate={{ y: isHovered ? [-5, 0, -5] : 0 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              <motion.polygon
-                points="90,40 100,30 110,40"
-                fill={color}
-                animate={{ y: isHovered ? [-5, 0, -5] : 0 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-
-              <rect x="80" y="70" width="40" height="40" rx="5" fill={color} opacity="0.8" />
-
-              <motion.path
-                d="M100 145 L100 165"
-                stroke={color}
-                strokeWidth="4"
-                strokeLinecap="round"
-                animate={{ y: isHovered ? [5, 0, 5] : 0 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              <motion.polygon
-                points="90,160 100,170 110,160"
-                fill={color}
-                animate={{ y: isHovered ? [5, 0, 5] : 0 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-
-              {/* Loop indicator */}
-              <motion.circle
-                cx="100"
-                cy="130"
-                r="8"
-                stroke={color}
-                strokeWidth="2"
-                fill="none"
-                animate={{
-                  rotateY: isHovered ? 360 : 0
-                }}
-                style={{
-                  transformOrigin: "100px 130px"
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              />
-              <motion.path
-                d="M100 122 L100 116"
-                stroke={color}
-                strokeWidth="2"
-                strokeLinecap="round"
-                animate={{
-                  rotateY: isHovered ? 360 : 0
-                }}
-                style={{
-                  transformOrigin: "100px 130px"
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              />
-            </>
-          )}
-
-          {direction === "horizontal" && (
-            <>
-              <motion.path
-                d="M45 100 L65 100"
-                stroke={color}
-                strokeWidth="4"
-                strokeLinecap="round"
-                animate={{ x: isHovered ? [-5, 0, -5] : 0 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              <motion.polygon
-                points="50,90 40,100 50,110"
-                fill={color}
-                animate={{ x: isHovered ? [-5, 0, -5] : 0 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-
-              <rect x="80" y="70" width="40" height="40" rx="5" fill={color} opacity="0.8" />
-
-              <motion.path
-                d="M155 100 L135 100"
-                stroke={color}
-                strokeWidth="4"
-                strokeLinecap="round"
-                animate={{ x: isHovered ? [5, 0, 5] : 0 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              <motion.polygon
-                points="150,90 160,100 150,110"
-                fill={color}
-                animate={{ x: isHovered ? [5, 0, 5] : 0 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-
-              {/* Loop indicator */}
-              <motion.circle
-                cx="100"
-                cy="130"
-                r="8"
-                stroke={color}
-                strokeWidth="2"
-                fill="none"
-                animate={{
-                  rotateY: isHovered ? 360 : 0
-                }}
-                style={{
-                  transformOrigin: "100px 130px"
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              />
-              <motion.path
-                d="M100 122 L100 116"
-                stroke={color}
-                strokeWidth="2"
-                strokeLinecap="round"
-                animate={{
-                  rotateY: isHovered ? 360 : 0
-                }}
-                style={{
-                  transformOrigin: "100px 130px"
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              />
-            </>
-          )}
-
-          {direction === "social" && (
-            <>
-              <circle cx="100" cy="70" r="20" fill={color} opacity="0.8" />
-              <circle cx="70" cy="110" r="14" fill={color} opacity="0.6" />
-              <circle cx="100" cy="120" r="12" fill={color} opacity="0.5" />
-              <circle cx="130" cy="110" r="14" fill={color} opacity="0.6" />
-
-              <motion.path
-                d="M85 70 L115 70"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                animate={{ scale: isHovered ? [1, 1.1, 1] : 1 }}
-                transition={{ duration: 1, repeat: Infinity }}
-              />
-              <motion.path
-                d="M100 55 L100 85"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                animate={{ scale: isHovered ? [1, 1.1, 1] : 1 }}
-                transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
-              />
-
-              <motion.path
-                d="M70 110 L100 70"
-                stroke="white"
-                strokeWidth="1"
-                strokeDasharray="2,2"
-                animate={{ opacity: isHovered ? [0.3, 0.8, 0.3] : 0.3 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              <motion.path
-                d="M130 110 L100 70"
-                stroke="white"
-                strokeWidth="1"
-                strokeDasharray="2,2"
-                animate={{ opacity: isHovered ? [0.3, 0.8, 0.3] : 0.3 }}
-                transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
-              />
-              <motion.path
-                d="M70 110 L130 110"
-                stroke="white"
-                strokeWidth="1"
-                strokeDasharray="2,2"
-                animate={{ opacity: isHovered ? [0.3, 0.8, 0.3] : 0.3 }}
-                transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
-              />
-
-              {/* Loop indicators */}
-              <motion.circle
-                cx="70"
-                cy="140"
-                r="6"
-                stroke="white"
-                strokeWidth="1.5"
-                fill="none"
-                animate={{ rotate: isHovered ? 360 : 0 }}
-                style={{ transformOrigin: "70px 140px" }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              />
-
-              <motion.circle
-                cx="100"
-                cy="140"
-                r="6"
-                stroke="white"
-                strokeWidth="1.5"
-                fill="none"
-                animate={{ rotate: isHovered ? 360 : 0 }}
-                style={{ transformOrigin: "100px 140px" }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-              />
-
-              <motion.circle
-                cx="130"
-                cy="140"
-                r="6"
-                stroke="white"
-                strokeWidth="1.5"
-                fill="none"
-                animate={{ rotate: isHovered ? 360 : 0 }}
-                style={{ transformOrigin: "130px 140px" }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              />
-            </>
-          )}
-
-          {/* Home indicator */}
-          <rect x="90" y="170" width="20" height="2" rx="1" fill="white" opacity="0.5" />
-        </svg>
-      </div>
-
-      {/* Text overlay */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-        <h3 className="text-xl font-bold mb-1">{title}</h3>
-        <p className="text-sm text-white/70">{description}</p>
-      </div>
-    </motion.div>
-  );
-}
-
-// Before/After comparison visual component
-function ComparisonVisual() {
+// Scroll Comparison Visual Component
+function ScrollComparisonVisual() {
   return (
     <motion.div
       className="relative w-full h-96"
@@ -1082,211 +659,114 @@ function ComparisonVisual() {
       transition={{ duration: 0.5, delay: 0.2 }}
     >
       <div className="absolute inset-0 flex flex-col md:flex-row">
-        {/* Before Section */}
+        {/* Before: Traditional Social Media */}
         <div className="h-1/2 md:h-full md:w-1/2 border-b md:border-b-0 md:border-r border-white/10 p-6 relative">
-          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs">Standard Videos</div>
+          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-red-500/20 backdrop-blur-md rounded-full text-xs border border-red-500/30">
+            Traditional Social Media
+          </div>
 
           <div className="flex flex-col h-full items-center justify-center">
-            {/* Phone mockup with mindless scrolling */}
-            <div className="relative w-36 h-64 md:w-40 md:h-72 bg-black rounded-3xl border-4 border-gray-800 overflow-hidden">
+            <div className="relative w-32 h-56 bg-black rounded-3xl border-4 border-gray-800 overflow-hidden">
               <div className="absolute inset-2 rounded-2xl bg-gray-900 overflow-hidden">
-                {/* Social media feed mockup */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <motion.div
-                    className="relative w-full"
-                    animate={{ y: ["0%", "-70%", "0%"] }}
-                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                  >
-                    {/* Long video thumbnails */}
-                    {[...Array(5)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="w-full py-2 px-2 border-b border-gray-800"
-                      >
-                        <div className="w-full h-20 bg-gray-800 rounded-md mb-2">
-                          <div className="absolute right-4 bottom-4 px-2 py-0.5 text-[8px] bg-gray-900 rounded">
-                            10:35
-                          </div>
-                        </div>
-                        <div className="h-2 w-24 bg-gray-800 rounded-full mb-1" />
-                        <div className="h-2 w-16 bg-gray-800 rounded-full" />
+                <motion.div
+                  className="space-y-2 p-2"
+                  animate={{ y: [0, -200, 0] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                >
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="w-full h-16 bg-gray-800 rounded-md relative">
+                      <div className="absolute inset-2 bg-gray-700 rounded opacity-50"></div>
+                      <div className="absolute bottom-1 right-1 text-[8px] text-white/60">
+                        {i % 2 ? 'Funny' : 'Dance'}
                       </div>
-                    ))}
-                  </motion.div>
-                </div>
+                    </div>
+                  ))}
+                </motion.div>
               </div>
-
-              {/* Skip indicators */}
-              <motion.div
-                className="absolute inset-x-0 bottom-0 h-full pointer-events-none"
-                initial={{ opacity: 1 }}
-                animate={{ opacity: 1 }}
-              >
-                {[...Array(3)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute right-4 w-6 h-6 rounded-full bg-gray-800/80 flex items-center justify-center text-xs"
-                    style={{
-                      top: `${30 + i * 22}%`,
-                    }}
-                    initial={{ x: 0, opacity: 0 }}
-                    animate={{
-                      x: [0, 20, 0],
-                      opacity: [0, 0.7, 0],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      delay: i * 3,
-                      ease: "easeInOut"
-                    }}
-                  >
-                    <span>&gt;&gt;</span>
-                  </motion.div>
-                ))}
-              </motion.div>
             </div>
 
-            {/* Time wasted indicator */}
             <motion.div
               className="mt-4 px-4 py-2 bg-red-500/20 backdrop-blur-md rounded-full text-sm border border-red-500/30 flex items-center"
-              animate={{
-                scale: [1, 1.03, 1],
-                opacity: [0.8, 1, 0.8]
-              }}
+              animate={{ opacity: [0.6, 1, 0.6] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
-              <FaClock className="mr-2 text-red-400" /> Low knowledge retention
+              <FaClock className="mr-2 text-red-400" /> Time Wasted
             </motion.div>
           </div>
         </div>
 
-        {/* After Section */}
+        {/* After: MentorScroll */}
         <div className="h-1/2 md:h-full md:w-1/2 p-6 relative">
-          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs">KnowScroll Loops</div>
+          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-green-500/20 backdrop-blur-md rounded-full text-xs border border-green-500/30">
+            MentorScroll
+          </div>
 
           <div className="flex flex-col h-full items-center justify-center">
-            {/* Phone mockup with KnowScroll */}
-            <div className="relative w-36 h-64 md:w-40 md:h-72 bg-black rounded-3xl border-4 border-gray-800 overflow-hidden">
+            <div className="relative w-32 h-56 bg-black rounded-3xl border-4 border-gray-800 overflow-hidden">
               <div className="absolute inset-2 rounded-2xl bg-gradient-to-br from-[#0c0612] to-[#1a1522] overflow-hidden">
-                {/* Looping clip mockup */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-[#8f46c1] to-[#d56f66] opacity-60"
+                  animate={{ opacity: [0.4, 0.8, 0.4] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
+
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
                   <motion.div
-                    className="w-full h-full"
-                    animate={{ opacity: [0.8, 1, 0.8] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-8 h-8 rounded-full bg-white/20 mb-2 flex items-center justify-center"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                   >
-                    <div className="w-full h-full bg-gradient-to-br from-[#8f46c1] to-[#d56f66] opacity-60" />
-
-                    {/* Center content */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-                      <motion.div
-                        className="w-12 h-12 rounded-full bg-white/20 mb-4 flex items-center justify-center"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                      >
-                        <motion.div
-                          className="w-10 h-10 rounded-full border-2 border-white"
-                          animate={{ scale: [1, 1.1, 1] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        />
-                      </motion.div>
-
-                      <div className="text-sm font-bold mb-1">Black Holes</div>
-                      <div className="text-xs mb-2">Event Horizon Explained</div>
-
-                      {/* Loop indicator */}
-                      <motion.div
-                        className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs flex items-center mt-2"
-                        animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                          className="mr-1"
-                        >
-                          ↻
-                        </motion.div>
-                        Looping (0:30)
-                      </motion.div>
-                    </div>
-                  </motion.div>
-                </div>
-
-                {/* Navigation indicators */}
-                <div className="absolute inset-0 pointer-events-none">
-                  <motion.div
-                    className="absolute left-1/2 top-6 transform -translate-x-1/2 w-6 h-6 rounded-full bg-white/10 flex items-center justify-center"
-                    animate={{ y: [0, -3, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <FaArrowUp className="text-xs text-white/80" />
+                    <FaBrain className="text-white text-sm" />
                   </motion.div>
 
+                  <div className="text-[10px] font-bold mb-1 text-white">Dr. Quantum</div>
+                  <div className="text-[8px] mb-2 text-white/80">Quantum Physics</div>
+
                   <motion.div
-                    className="absolute right-6 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full bg-white/10 flex items-center justify-center"
-                    animate={{ x: [0, 3, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    className="w-12 h-1 bg-white/30 rounded-full overflow-hidden"
+                    initial={{ width: 0 }}
+                    animate={{ width: 48 }}
+                    transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
                   >
-                    <FaArrowRight className="text-xs text-white/80" />
+                    <motion.div
+                      className="h-full bg-white"
+                      animate={{ x: [0, 48, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
                   </motion.div>
                 </div>
               </div>
 
-              {/* Knowledge bubbles floating up */}
-              <motion.div
-                className="absolute inset-x-0 bottom-0 h-full pointer-events-none"
-                initial={{ opacity: 1 }}
-                animate={{ opacity: 1 }}
-              >
-                {[...Array(5)].map((_, i) => {
-                  const icons = [
-                    <FaBrain key="brain" className="text-[8px] text-white" />,
-                    <FaCompass key="compass" className="text-[8px] text-white" />,
-                    <FaGraduationCap key="grad" className="text-[8px] text-white" />,
-                    <FaRegLightbulb key="bulb" className="text-[8px] text-white" />,
-                    <FaStar key="star" className="text-[8px] text-white" />
-                  ];
-
-                  return (
-                    <motion.div
-                      key={i}
-                      className="absolute w-6 h-6 rounded-full bg-gradient-to-br from-[#8f46c1] to-[#d56f66] flex items-center justify-center"
-                      style={{
-                        left: `${20 + i * 12}%`,
-                        bottom: '10%'
-                      }}
-                      initial={{ y: 0, opacity: 0 }}
-                      animate={{
-                        y: -100 - i * 20,
-                        opacity: [0, 0.9, 0],
-                        x: i % 2 === 0 ? [0, 10, -5, 0] : [0, -10, 5, 0]
-                      }}
-                      transition={{
-                        duration: 3 + i * 0.5,
-                        repeat: Infinity,
-                        delay: i * 0.8,
-                        ease: "easeOut"
-                      }}
-                    >
-                      {icons[i]}
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
+              {/* Knowledge particles */}
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-1 h-1 bg-green-400 rounded-full"
+                  style={{
+                    left: `${30 + i * 20}%`,
+                    bottom: '10%'
+                  }}
+                  animate={{
+                    y: [-60, 0],
+                    opacity: [0, 1, 0],
+                    scale: [0.5, 1, 0.5]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: i * 0.5,
+                    ease: "easeOut"
+                  }}
+                />
+              ))}
             </div>
 
-            {/* Knowledge gained indicator */}
             <motion.div
               className="mt-4 px-4 py-2 bg-green-500/20 backdrop-blur-md rounded-full text-sm border border-green-500/30 flex items-center"
-              animate={{
-                scale: [1, 1.03, 1],
-                opacity: [0.8, 1, 0.8]
-              }}
+              animate={{ opacity: [0.6, 1, 0.6] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
-              <FaGraduationCap className="mr-2 text-green-400" /> Perfect for concept retention
+              <FaBrain className="mr-2 text-green-400" /> Knowledge Gained
             </motion.div>
           </div>
         </div>

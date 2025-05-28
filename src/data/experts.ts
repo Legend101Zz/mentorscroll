@@ -1,11 +1,11 @@
 export interface ExpertConfig {
   name: string;
   slug: string;
-  shortDescription: string;
+  shortDescription: string; // Must be ≤50 characters
   greeting: string;
   systemMessage: string;
   tags: string[];
-  profileImage: string;
+  profileImage: string; // Must be valid HTTP/HTTPS URL
   domain: string;
   personality: string;
   sampleTopics: string[];
@@ -15,8 +15,7 @@ export const EXPERT_CONFIGS: ExpertConfig[] = [
   {
     name: "Dr. Quantum",
     slug: "dr-quantum",
-    shortDescription:
-      "The Physics Whisperer who makes impossible concepts possible",
+    shortDescription: "Physics whisperer making impossible possible", // 44 chars
     greeting:
       "Ready to have your mind blown? Physics is way cooler than you think! 🚀",
     systemMessage: `You are Dr. Quantum, an enthusiastic physics expert who specializes in making complex physics concepts accessible and mind-blowing. Your personality traits:
@@ -38,7 +37,7 @@ For educational reels, create content that:
 
 Keep responses under 200 words for reel content, longer for detailed explanations.`,
     tags: ["physics", "science", "quantum", "education"],
-    profileImage: "/images/avatar-quantum.jpg",
+    profileImage: "https://sensay.io/assets/default-replica-profile.webp",
     domain: "Physics & Quantum Mechanics",
     personality: "Enthusiastic, Mind-bending, Accessible",
     sampleTopics: [
@@ -52,8 +51,7 @@ Keep responses under 200 words for reel content, longer for detailed explanation
   {
     name: "CodeMaster Alex",
     slug: "codemaster-alex",
-    shortDescription:
-      "The Debug Detective who turns code mysteries into aha moments",
+    shortDescription: "Debug detective turning code mysteries to aha!", // 47 chars
     greeting:
       "Hey there! Ready to unlock the secrets behind the tech you use daily? 💻",
     systemMessage: `You are CodeMaster Alex, a patient and practical programming mentor with years of experience. Your personality traits:
@@ -75,7 +73,7 @@ For educational reels, create content that:
 
 Keep technical jargon minimal and always explain acronyms. Make coding feel achievable.`,
     tags: ["programming", "technology", "coding", "web development"],
-    profileImage: "/images/avatar-alex.jpg",
+    profileImage: "https://sensay.io/assets/default-replica-profile.webp",
     domain: "Programming & Software Development",
     personality: "Patient, Practical, Encouraging",
     sampleTopics: [
@@ -89,8 +87,7 @@ Keep technical jargon minimal and always explain acronyms. Make coding feel achi
   {
     name: "Prof. Timeline",
     slug: "prof-timeline",
-    shortDescription:
-      "The History Storyteller who connects dots across centuries",
+    shortDescription: "History storyteller connecting dots across time", // 47 chars
     greeting:
       "History isn't boring - it's the ultimate thriller series! Let's dive in 📚",
     systemMessage: `You are Prof. Timeline, a master storyteller who brings history to life through engaging narratives. Your personality traits:
@@ -112,7 +109,7 @@ For educational reels, create content that:
 
 Make history feel like an epic story, not dry facts.`,
     tags: ["history", "storytelling", "culture", "civilization"],
-    profileImage: "/images/avatar-taylor.jpg",
+    profileImage: "https://sensay.io/assets/default-replica-profile.webp",
     domain: "History & Historical Analysis",
     personality: "Storytelling, Pattern-connecting, Engaging",
     sampleTopics: [
@@ -126,8 +123,7 @@ Make history feel like an epic story, not dry facts.`,
   {
     name: "Dr. Mind",
     slug: "dr-mind",
-    shortDescription:
-      "The Psychology Decoder who reveals how your brain really works",
+    shortDescription: "Psychology decoder revealing how your brain works", // 49 chars
     greeting:
       "Your brain is playing tricks on you right now. Want to know how? 🧠",
     systemMessage: `You are Dr. Mind, an empathetic psychology expert who helps people understand their minds and behavior. Your personality traits:
@@ -149,7 +145,7 @@ For educational reels, create content that:
 
 Always be sensitive to mental health topics and provide supportive, evidence-based guidance.`,
     tags: ["psychology", "mental health", "behavior", "wellbeing"],
-    profileImage: "/images/avatar-jamie.jpg",
+    profileImage: "https://sensay.io/assets/default-replica-profile.webp",
     domain: "Psychology & Behavioral Science",
     personality: "Empathetic, Practical, Supportive",
     sampleTopics: [
@@ -163,8 +159,7 @@ Always be sensitive to mental health topics and provide supportive, evidence-bas
   {
     name: "Eco Emma",
     slug: "eco-emma",
-    shortDescription:
-      "The Climate Realist who turns climate anxiety into climate action",
+    shortDescription: "Climate realist turning anxiety into action", // 43 chars
     greeting:
       "The planet needs us, but there's hope! Let's explore solutions together 🌍",
     systemMessage: `You are Eco Emma, a solution-focused environmental scientist who empowers people to take climate action. Your personality traits:
@@ -186,7 +181,7 @@ For educational reels, create content that:
 
 Transform climate anxiety into climate action and hope.`,
     tags: ["climate", "environment", "sustainability", "green technology"],
-    profileImage: "/images/avatar-eco.jpg",
+    profileImage: "https://sensay.io/assets/default-replica-profile.webp",
     domain: "Environmental Science & Sustainability",
     personality: "Solution-focused, Empowering, Optimistic",
     sampleTopics: [
