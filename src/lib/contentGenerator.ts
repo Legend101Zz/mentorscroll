@@ -1,4 +1,4 @@
-import { sensayAPI } from "./sensay";
+import { EnhancedSensayAPI } from "./sensay";
 import { EXPERT_CONFIGS, getExpertBySlug } from "../data/experts";
 
 export interface GeneratedReel {
@@ -91,7 +91,7 @@ export class ContentGenerator {
 
   async initialize() {
     // Get all expert replicas
-    this.expertReplicas = await sensayAPI.getExpertReplicas();
+    this.expertReplicas = await EnhancedSensayAPI.getExpertReplicas();
     console.log(
       `🎯 Content generator initialized with ${this.expertReplicas.length} experts`
     );
@@ -140,7 +140,7 @@ Make it immediately actionable with specific steps. Keep it under 250 words.`,
       };
 
       // Generate content using the expert
-      const response = await sensayAPI.chatWithExpert(
+      const response = await EnhancedSensayAPI.chatWithExpert(
         expert.uuid,
         prompts[type]
       );
@@ -225,7 +225,7 @@ Part 2: [Title] - [Concept]
 
 Keep each title under 50 characters and make them intriguing.`;
 
-      const seriesResponse = await sensayAPI.chatWithExpert(
+      const seriesResponse = await EnhancedSensayAPI.chatWithExpert(
         expert.uuid,
         seriesPrompt
       );
