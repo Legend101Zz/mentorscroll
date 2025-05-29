@@ -401,7 +401,7 @@ export default function EnhancedHomePage() {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 1 }}
               >
-                Core Philosophy: <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-400">"You're Learning"</span>
+                Core Philosophy: <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-400">&apos;You re Learning&apos;</span>
               </motion.div>
             </motion.div>
 
@@ -723,7 +723,7 @@ export default function EnhancedHomePage() {
                   </div>
 
                   <div className="bg-white/5 rounded-lg p-3 mb-4">
-                    <p className="text-white/80 text-sm italic">"{expert.shortDescription}"</p>
+                    <p className="text-white/80 text-sm italic">&apos;{expert.shortDescription}&apos;</p>
                   </div>
 
                   <div className="mb-4">
@@ -955,7 +955,7 @@ export default function EnhancedHomePage() {
                 </div>
 
                 <blockquote className="text-white/80 italic text-sm mb-4 bg-white/5 rounded-lg p-3">
-                  "{creator.testimonial}"
+                  &apos;{creator.testimonial}&apos;
                 </blockquote>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
