@@ -566,24 +566,9 @@ Democratizes access to expertise - anyone can learn from world-class experts, an
 
 ### Demo & Testing
 
-- **Live Application**: [Your deployment URL]
-- **Video Demo**: [YouTube/Loom link]
-- **Creator Dashboard**: Test the full creator economy features
+- **Live Application**: [https://mentorscroll.vercel.app]
+- **Video Demo**: [https://youtu.be/i_8jMvzdFPQ]
 - **Expert Test Commands**: See setup instructions above
-
-### Team Contact
-
-- **Technical Questions**: Include your technical contact
-- **Creator Partnerships**: Include creator relations contact
-- **Partnership Inquiries**: Include business contact
-- **Hackathon Judges**: Available for live demo sessions
-
-### Documentation
-
-- **API Integration**: `src/lib/sensay.ts`
-- **Creator Economy**: `src/lib/enhancedSensayAPI.ts`
-- **Expert Setup**: `src/scripts/setupExperts.ts`
-- **Content Generation**: `src/lib/contentGenerator.ts`
 
 ---
 
