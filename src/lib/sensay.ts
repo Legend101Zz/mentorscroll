@@ -5,6 +5,9 @@ const API_KEY =
   "022aa5b4336ed59e2a98aa0158cc647f7a7f42ebc8a51d4f5d28d714fb655485";
 const ORGANIZATION_ID = "18db70f4-ad9d-4519-9bd2-9bcf6928a323";
 
+// Use a consistent user ID instead of Date.now()
+const CONSISTENT_USER_ID = "mentorscroll_main_user";
+
 // Create axios instance with default headers
 const sensayClient = axios.create({
   baseURL: SENSAY_API_BASE,
@@ -53,22 +56,25 @@ export interface ChatResponse {
 }
 
 export class SensayAPI {
-  private userId: string = "mentorscroll_user_" + Date.now();
+  private userId: string = CONSISTENT_USER_ID;
 
   // Initialize user (create if doesn't exist)
   async initializeUser(): Promise<SensayUser> {
     try {
       // Try to get existing user
       const response = await sensayClient.get(`/users/${this.userId}`);
+      console.log(`✅ Found existing user: ${this.userId}`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
         // User doesn't exist, create new one
+        console.log(`🆕 Creating new user: ${this.userId}`);
         const createResponse = await sensayClient.post("/users", {
           id: this.userId,
-          name: "MentorScroll User",
-          email: `user_${Date.now()}@mentorscroll.app`,
+          name: "MentorScroll Main User",
+          email: `${this.userId}@mentorscroll.app`,
         });
+        console.log(`✅ Created user: ${this.userId}`);
         return createResponse.data;
       }
       throw error;
@@ -258,6 +264,33 @@ export class SensayAPI {
 
   getUserId(): string {
     return this.userId;
+  }
+
+  // Helper method to set a custom user ID if needed
+  setUserId(userId: string): void {
+    this.userId = userId;
+  }
+
+  // Get replica by UUID
+  async getReplicaByUuid(uuid: string): Promise<SensayReplica | null> {
+    try {
+      const replicas = await this.getExpertReplicas();
+      return replicas.find((replica) => replica.uuid === uuid) || null;
+    } catch (error) {
+      console.error("Error finding replica by UUID:", error);
+      return null;
+    }
+  }
+
+  // Get replica by slug
+  async getReplicaBySlug(slug: string): Promise<SensayReplica | null> {
+    try {
+      const replicas = await this.getExpertReplicas();
+      return replicas.find((replica) => replica.slug === slug) || null;
+    } catch (error) {
+      console.error("Error finding replica by slug:", error);
+      return null;
+    }
   }
 }
 

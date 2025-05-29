@@ -3,9 +3,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlay, FaVolumeUp, FaVolumeMute, FaPause, FaInfo, FaRandom, FaComments, FaLightbulb, FaEye } from 'react-icons/fa';
+import { FaPlay, FaVolumeUp, FaVolumeMute, FaPause, FaInfo, FaRandom, FaComments, FaLightbulb, FaEye, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useSwipeable } from 'react-swipeable';
 import ExpertChat from './ExpertChat';
+import TextBasedReel from './TextBasedReel';
 import { contentGenerator } from '../lib/contentGenerator';
 import { ReelData } from '../data/deckReels';
 
@@ -34,13 +35,10 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
     const [alternativePerspectives, setAlternativePerspectives] = useState<ReelData[]>([]);
     const [showAlternatives, setShowAlternatives] = useState(false);
     const [isLoadingAlternatives, setIsLoadingAlternatives] = useState(false);
-
-    // Preloading state
-    const [preloadedIndexes, setPreloadedIndexes] = useState<number[]>([]);
+    const [isGeneratingNew, setIsGeneratingNew] = useState(false);
 
     // Refs
     const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
-    const preloadRefs = useRef<Record<string, HTMLVideoElement | null>>({});
     const deckRef = useRef<HTMLDivElement>(null);
     const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -55,16 +53,16 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Auto-hide controls
+    // Auto-hide controls for better text reading experience
     useEffect(() => {
         if (controlsTimerRef.current) {
             clearTimeout(controlsTimerRef.current);
         }
 
-        if (controlsVisible && isPlaying && !showInfo && !isChatOpen) {
+        if (controlsVisible && !showInfo && !isChatOpen && !isShuffling) {
             controlsTimerRef.current = setTimeout(() => {
                 setControlsVisible(false);
-            }, 3000);
+            }, 4000); // Longer timeout for text reading
         }
 
         return () => {
@@ -72,53 +70,7 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
                 clearTimeout(controlsTimerRef.current);
             }
         };
-    }, [controlsVisible, isPlaying, showInfo, isChatOpen]);
-
-    // Handle video management for traditional video reels
-    useEffect(() => {
-        const currentReel = reels[currentIndex];
-        if (!currentReel?.videoUrl) {
-            setVideoLoaded(true); // For text-based reels
-            return;
-        }
-
-        setVideoLoaded(false);
-
-        // Pause all videos first
-        Object.values(videoRefs.current).forEach(videoEl => {
-            if (videoEl && !videoEl.paused) {
-                videoEl.pause();
-            }
-        });
-
-        // Play current video if needed
-        const currentVideo = videoRefs.current[currentReel.id];
-        if (currentVideo) {
-            currentVideo.muted = isMuted;
-
-            const handleCanPlay = () => {
-                setVideoLoaded(true);
-                if (isPlaying) {
-                    currentVideo.play().catch(err => {
-                        console.error("Video playback error:", err);
-                        setIsPlaying(false);
-                    });
-                }
-            };
-
-            currentVideo.addEventListener('canplay', handleCanPlay);
-
-            if (currentVideo.readyState >= 3) {
-                handleCanPlay();
-            } else {
-                currentVideo.load();
-            }
-
-            return () => {
-                currentVideo.removeEventListener('canplay', handleCanPlay);
-            };
-        }
-    }, [currentIndex, isPlaying, isMuted, reels]);
+    }, [controlsVisible, showInfo, isChatOpen, isShuffling]);
 
     // Handle card navigation 
     const navigateToReel = (direction: 'next' | 'prev') => {
@@ -127,7 +79,7 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
         setIsTransitioning(true);
         setSwipeDirection(direction === 'next' ? 'left' : 'right');
         setControlsVisible(true);
-        setShowAlternatives(false); // Hide alternatives when navigating
+        setShowAlternatives(false);
 
         setTimeout(() => {
             setCurrentIndex(prevIndex => {
@@ -141,40 +93,57 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
             setTimeout(() => {
                 setIsTransitioning(false);
                 setSwipeDirection(null);
-                setIsPlaying(true);
+                // Auto-show content for text-based reels
+                if (reels[currentIndex]?.isGenerated) {
+                    setIsPlaying(true);
+                }
             }, 100);
         }, 300);
     };
 
-    // Handle shuffle animation
-    const shuffleDeck = () => {
+    // Enhanced shuffle with AI generation
+    const shuffleAndGenerate = async () => {
         if (isTransitioning || isShuffling) return;
 
         setIsShuffling(true);
+        setIsGeneratingNew(true);
         setSwipeDirection('shuffle');
         setControlsVisible(true);
         setShowAlternatives(false);
 
-        const getRandomIndex = () => {
-            if (reels.length <= 1) return currentIndex;
-            let newIndex;
-            do {
-                newIndex = Math.floor(Math.random() * reels.length);
-            } while (newIndex === currentIndex);
-            return newIndex;
-        };
+        try {
+            // Generate new content while shuffling
+            await contentGenerator.initialize();
 
-        const randomIndex = getRandomIndex();
+            // Random shuffle
+            const getRandomIndex = () => {
+                if (reels.length <= 1) return currentIndex;
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * reels.length);
+                } while (newIndex === currentIndex);
+                return newIndex;
+            };
 
-        setTimeout(() => {
-            setCurrentIndex(randomIndex);
+            const randomIndex = getRandomIndex();
 
             setTimeout(() => {
-                setIsShuffling(false);
-                setSwipeDirection(null);
-                setIsPlaying(true);
-            }, 400);
-        }, 500);
+                setCurrentIndex(randomIndex);
+                setIsGeneratingNew(false);
+
+                setTimeout(() => {
+                    setIsShuffling(false);
+                    setSwipeDirection(null);
+                    setIsPlaying(true);
+                }, 400);
+            }, 1500);
+
+        } catch (error) {
+            console.error('Error during shuffle and generate:', error);
+            setIsGeneratingNew(false);
+            setIsShuffling(false);
+            setSwipeDirection(null);
+        }
     };
 
     // Generate alternative perspectives using Sensay
@@ -186,13 +155,9 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
         setShowAlternatives(true);
 
         try {
-            // Initialize content generator if needed
             await contentGenerator.initialize();
-
-            // Generate alternative perspectives
             const alternatives = await contentGenerator.generateAlternativePerspectives(currentReel.topic);
             setAlternativePerspectives(alternatives);
-
         } catch (error) {
             console.error('Error generating alternatives:', error);
             setAlternativePerspectives([]);
@@ -207,15 +172,21 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
         setControlsVisible(true);
     };
 
-    // Swipe handling
+    // Swipe handling optimized for text content
     const swipeHandlers = useSwipeable({
         onSwipedLeft: () => !isShuffling && !isTransitioning && navigateToReel('next'),
         onSwipedRight: () => !isShuffling && !isTransitioning && navigateToReel('prev'),
-        onTap: () => setControlsVisible(!controlsVisible),
+        onTap: () => {
+            setControlsVisible(!controlsVisible);
+            // For text reels, tapping also toggles reading mode
+            if (reels[currentIndex]?.isGenerated) {
+                setIsPlaying(!isPlaying);
+            }
+        },
         preventDefaultTouchmoveEvent: true,
         trackMouse: false,
         trackTouch: true,
-        delta: 10,
+        delta: 15,
         swipeDuration: 500,
     });
 
@@ -223,12 +194,6 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
     const togglePlay = (e: React.MouseEvent) => {
         e.stopPropagation();
         setIsPlaying(!isPlaying);
-        setControlsVisible(true);
-    };
-
-    const toggleMute = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setIsMuted(!isMuted);
         setControlsVisible(true);
     };
 
@@ -244,7 +209,7 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
 
     const currentReel = reels[currentIndex];
 
-    // Card positioning and animation system
+    // Enhanced card positioning for text-based content
     const getCardTransform = (index: number) => {
         const distance = Math.min(
             Math.abs(index - currentIndex),
@@ -257,26 +222,27 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
         const isCurrentCard = index === currentIndex;
 
         let transform = {
-            x: isCurrentCard ? 0 : (index < currentIndex ? -5 : 5) * distance,
-            y: isCurrentCard ? 0 : -10 * distance,
-            z: isCurrentCard ? 0 : -20 * distance,
-            rotateZ: isCurrentCard ? 0 : (index < currentIndex ? -5 : 5) * distance,
-            scale: isCurrentCard ? 1 : 1 - (0.05 * distance),
-            opacity: isCurrentCard ? 1 : 1 - (0.2 * distance),
+            x: isCurrentCard ? 0 : (index < currentIndex ? -8 : 8) * distance,
+            y: isCurrentCard ? 0 : -15 * distance,
+            z: isCurrentCard ? 0 : -25 * distance,
+            rotateZ: isCurrentCard ? 0 : (index < currentIndex ? -3 : 3) * distance,
+            scale: isCurrentCard ? 1 : 1 - (0.03 * distance),
+            opacity: isCurrentCard ? 1 : 1 - (0.15 * distance),
             zIndex: 10 - distance,
         };
 
+        // Apply transition animations
         if (isCurrentCard && swipeDirection) {
             if (swipeDirection === 'left') {
                 transform.x = -1000;
-                transform.rotateZ = -10;
+                transform.rotateZ = -15;
             } else if (swipeDirection === 'right') {
                 transform.x = 1000;
-                transform.rotateZ = 10;
+                transform.rotateZ = 15;
             } else if (swipeDirection === 'shuffle') {
-                transform.y = -200;
-                transform.rotateZ = index % 2 ? 120 : -120;
-                transform.scale = 0.8;
+                transform.y = -300;
+                transform.rotateZ = index % 2 ? 180 : -180;
+                transform.scale = 0.7;
                 transform.opacity = 0;
             }
         }
@@ -284,55 +250,17 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
         return transform;
     };
 
-    // Render content based on reel type
-    const renderReelContent = (reel: ReelData) => {
-        if (reel.isGenerated) {
-            // Render text-based generated content
-            return (
-                <div className="absolute inset-0 p-6 flex flex-col justify-center bg-gradient-to-br from-black/60 to-transparent">
-                    <div className="space-y-4">
-                        <div className="flex items-center space-x-2 mb-4">
-                            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                            <span className="text-xs text-white/80 font-medium">AI Generated Content</span>
-                        </div>
-
-                        <div className="prose prose-invert prose-sm max-w-none">
-                            <div className="text-white leading-relaxed whitespace-pre-wrap">
-                                {reel.content}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        } else {
-            // Render traditional video content
-            return (
-                <video
-                    ref={el => videoRefs.current[reel.id] = el}
-                    src={reel.videoUrl}
-                    poster={reel.thumbnailUrl}
-                    className="w-full h-full object-cover"
-                    playsInline
-                    loop
-                    muted={isMuted}
-                />
-            );
-        }
-    };
-
-    // Render a single card
+    // Render individual card with enhanced text support
     const renderCard = (reel: ReelData, index: number) => {
         const isCurrentCard = index === currentIndex;
         const transform = getCardTransform(index);
 
         if (!transform) return null;
 
-        const isLoading = isCurrentCard && !videoLoaded && !isTransitioning && !isShuffling;
-
         return (
             <motion.div
                 key={reel.id}
-                className={`absolute top-0 left-0 w-full h-full rounded-2xl overflow-hidden shadow-xl ${isCurrentCard ? 'card-active' : 'card-background'}`}
+                className={`absolute top-0 left-0 w-full h-full ${isCurrentCard ? 'z-10' : ''}`}
                 style={{
                     zIndex: transform.zIndex,
                     willChange: 'transform'
@@ -347,157 +275,46 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
                 }}
                 transition={{
                     type: 'tween',
-                    duration: isShuffling ? 0.6 : 0.3,
+                    duration: isShuffling ? 0.8 : 0.4,
                     ease: "easeOut"
                 }}
             >
-                <div className="absolute inset-0">
-                    {/* Background */}
-                    <div className="relative w-full h-full">
-                        {reel.isGenerated ? (
-                            <div
-                                className={`w-full h-full bg-gradient-to-br ${reel.color}`}
-                                style={{
-                                    backgroundImage: `url(${reel.thumbnailUrl})`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    backgroundBlendMode: 'overlay'
-                                }}
-                            />
-                        ) : (
-                            <>
-                                {isCurrentCard ? renderReelContent(reel) : (
-                                    <div
-                                        className="w-full h-full bg-cover bg-center"
-                                        style={{ backgroundImage: `url(${reel.thumbnailUrl})` }}
-                                    />
-                                )}
-                            </>
-                        )}
-
-                        {/* Gradient overlay */}
+                {reel.isGenerated ? (
+                    <TextBasedReel
+                        reel={reel}
+                        isActive={isCurrentCard && isPlaying}
+                        onInteraction={handleContainerClick}
+                    />
+                ) : (
+                    // Traditional video reel (fallback)
+                    <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-xl">
+                        <video
+                            ref={el => videoRefs.current[reel.id] = el}
+                            src={reel.videoUrl}
+                            poster={reel.thumbnailUrl}
+                            className="w-full h-full object-cover"
+                            playsInline
+                            loop
+                            muted={isMuted}
+                        />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-
-                        {/* Colored overlay */}
                         <div className={`absolute inset-0 bg-gradient-to-br ${reel.color} opacity-30 mix-blend-overlay`} />
+
+                        {isCurrentCard && (
+                            <div className="absolute inset-0 p-6 flex flex-col justify-end">
+                                <h3 className="text-2xl font-bold mb-2 text-white">{reel.title}</h3>
+                                <p className="text-white/80 text-sm mb-4">{reel.subtitle}</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {reel.tags.map((tag, i) => (
+                                        <span key={i} className="text-xs bg-white/20 px-2 py-1 rounded-full">
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
-
-                    {/* Content for generated reels */}
-                    {isCurrentCard && reel.isGenerated && renderReelContent(reel)}
-
-                    {/* Card content overlay */}
-                    {isCurrentCard && (
-                        <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-between">
-                            {/* Top bar */}
-                            <div className={`flex justify-between items-start transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
-                                <div className="flex space-x-2">
-                                    <div className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs">
-                                        {reel.tags[0]}
-                                    </div>
-                                    {reel.isGenerated && (
-                                        <div className="px-3 py-1 bg-green-500/20 backdrop-blur-md rounded-full text-xs flex items-center">
-                                            <FaLightbulb className="mr-1 text-green-400" />
-                                            AI Expert
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="flex space-x-2">
-                                    <div className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs">
-                                        {reel.duration}
-                                    </div>
-                                    <div className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs">
-                                        {reel.views}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {showAlternatives && (
-                                <AlternativePerspectives
-                                    alternatives={alternativePerspectives}
-                                    isLoading={isLoadingAlternatives}
-                                    onClose={() => setShowAlternatives(false)}
-                                />
-                            )}
-
-                            {/* Bottom content */}
-                            <div>
-                                {!showInfo && !reel.isGenerated && (
-                                    <div className={`transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
-                                        {/* Instructor info */}
-                                        <div className="mb-2 flex items-center">
-                                            <div className="w-8 h-8 rounded-full bg-white/20 mr-2 flex items-center justify-center text-xs font-bold">
-                                                {reel.instructor.charAt(0)}
-                                            </div>
-                                            <span className="text-sm">{reel.instructor}</span>
-                                        </div>
-
-                                        {/* Title and description */}
-                                        <h3 className="text-2xl font-bold mb-1">{reel.title}</h3>
-                                        <p className="text-white/80 text-sm mb-4">{reel.subtitle}</p>
-
-                                        {/* Enhanced controls */}
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex space-x-2">
-                                                {!reel.isGenerated && (
-                                                    <>
-                                                        <motion.button
-                                                            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center"
-                                                            whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.2)" }}
-                                                            whileTap={{ scale: 0.9 }}
-                                                            onClick={togglePlay}
-                                                        >
-                                                            {isPlaying ? <FaPause /> : <FaPlay />}
-                                                        </motion.button>
-
-                                                        <motion.button
-                                                            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center"
-                                                            whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.2)" }}
-                                                            whileTap={{ scale: 0.9 }}
-                                                            onClick={toggleMute}
-                                                        >
-                                                            {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
-                                                        </motion.button>
-                                                    </>
-                                                )}
-
-                                                <motion.button
-                                                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center"
-                                                    whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.2)" }}
-                                                    whileTap={{ scale: 0.9 }}
-                                                    onClick={openExpertChat}
-                                                >
-                                                    <FaComments />
-                                                </motion.button>
-
-                                                <motion.button
-                                                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center"
-                                                    whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.2)" }}
-                                                    whileTap={{ scale: 0.9 }}
-                                                    onClick={generateAlternatives}
-                                                >
-                                                    <FaEye />
-                                                </motion.button>
-                                            </div>
-
-                                            <motion.button
-                                                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center"
-                                                whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.2)" }}
-                                                whileTap={{ scale: 0.9 }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    shuffleDeck();
-                                                }}
-                                            >
-                                                <FaRandom />
-                                            </motion.button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
+                )}
             </motion.div>
         );
     };
@@ -505,6 +322,36 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
     return (
         <>
             <div className="relative h-[500px] md:h-[600px]" style={{ perspective: '1000px' }}>
+                {/* Loading/Generating indicator */}
+                <AnimatePresence>
+                    {(isShuffling || isGeneratingNew) && (
+                        <motion.div
+                            className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            <motion.div
+                                className="px-8 py-4 bg-black/70 backdrop-blur-lg rounded-2xl border border-white/20"
+                                initial={{ scale: 0.8, y: 20 }}
+                                animate={{ scale: 1, y: 0 }}
+                                exit={{ scale: 0.8, y: 20 }}
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <motion.div
+                                        className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full"
+                                        animate={{ rotate: 360 }}
+                                        transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                                    />
+                                    <span className="text-white font-medium">
+                                        {isGeneratingNew ? 'Generating AI Content...' : 'Shuffling Deck...'}
+                                    </span>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 {/* Main container */}
                 <div
                     ref={deckRef}
@@ -513,53 +360,169 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
                     {...swipeHandlers}
                 >
                     {/* Card container */}
-                    <div className="relative w-72 h-96 md:w-80 md:h-[450px]" style={{ transformStyle: 'preserve-3d' }}>
-                        {/* Navigation arrows for desktop */}
+                    <div
+                        className="relative w-80 h-[450px] md:w-96 md:h-[500px]"
+                        style={{ transformStyle: 'preserve-3d' }}
+                    >
+                        {/* Enhanced Navigation */}
                         {!isMobile && !isShuffling && !isTransitioning && (
                             <div className={`transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
-                                <button
-                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1/2 z-30 w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10"
+                                <motion.button
+                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-16 z-30 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 hover:bg-black/70"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         navigateToReel('prev');
                                     }}
+                                    whileHover={{ scale: 1.05, x: -2 }}
+                                    whileTap={{ scale: 0.95 }}
                                 >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M15 18l-6-6 6-6" />
-                                    </svg>
-                                </button>
+                                    <FaChevronLeft className="text-white" />
+                                </motion.button>
 
-                                <button
-                                    className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1/2 z-30 w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10"
+                                <motion.button
+                                    className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-16 z-30 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 hover:bg-black/70"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         navigateToReel('next');
                                     }}
+                                    whileHover={{ scale: 1.05, x: 2 }}
+                                    whileTap={{ scale: 0.95 }}
                                 >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M9 18l6-6-6-6" />
-                                    </svg>
-                                </button>
+                                    <FaChevronRight className="text-white" />
+                                </motion.button>
                             </div>
                         )}
 
+                        {/* Enhanced Control Panel */}
+                        {!isShuffling && !isTransitioning && (
+                            <motion.div
+                                className="absolute -top-16 left-1/2 transform -translate-x-1/2 z-30 flex items-center space-x-3"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: controlsVisible ? 1 : 0, y: 0 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <motion.button
+                                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-white text-sm font-medium shadow-lg"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        shuffleAndGenerate();
+                                    }}
+                                    whileHover={{ scale: 1.05, boxShadow: "0 8px 25px -5px rgba(147, 51, 234, 0.4)" }}
+                                    whileTap={{ scale: 0.95 }}
+                                    disabled={isGeneratingNew}
+                                >
+                                    <FaRandom className="inline mr-2" />
+                                    {isGeneratingNew ? 'Generating...' : 'AI Shuffle'}
+                                </motion.button>
+
+                                <motion.button
+                                    className="px-4 py-2 bg-black/50 backdrop-blur-md rounded-full text-white text-sm border border-white/20"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        openExpertChat();
+                                    }}
+                                    whileHover={{ scale: 1.05, backgroundColor: "rgba(0,0,0,0.7)" }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <FaComments className="inline mr-2" />
+                                    Chat
+                                </motion.button>
+
+                                <motion.button
+                                    className="px-4 py-2 bg-black/50 backdrop-blur-md rounded-full text-white text-sm border border-white/20"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        generateAlternatives();
+                                    }}
+                                    whileHover={{ scale: 1.05, backgroundColor: "rgba(0,0,0,0.7)" }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <FaEye className="inline mr-2" />
+                                    More Views
+                                </motion.button>
+                            </motion.div>
+                        )}
+
+                        {/* Alternative perspectives panel */}
+                        <AnimatePresence>
+                            {showAlternatives && (
+                                <motion.div
+                                    className="absolute inset-x-0 -bottom-32 bg-black/80 backdrop-blur-md rounded-2xl p-6 z-40 border border-white/20"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 20 }}
+                                >
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h4 className="text-lg font-semibold text-white">Alternative Perspectives</h4>
+                                        <button
+                                            onClick={() => setShowAlternatives(false)}
+                                            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+
+                                    {isLoadingAlternatives ? (
+                                        <div className="space-y-3">
+                                            {[1, 2, 3].map(i => (
+                                                <div key={i} className="bg-white/10 rounded-lg p-3 animate-pulse">
+                                                    <div className="h-4 bg-white/20 rounded mb-2"></div>
+                                                    <div className="h-3 bg-white/20 rounded w-3/4"></div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3 max-h-40 overflow-y-auto">
+                                            {alternativePerspectives.map((alt) => (
+                                                <motion.div
+                                                    key={alt.id}
+                                                    className="bg-white/10 rounded-lg p-3 hover:bg-white/20 transition-colors cursor-pointer"
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                >
+                                                    <div className="flex items-center space-x-2 mb-2">
+                                                        <div className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center">
+                                                            <FaLightbulb className="text-xs text-white" />
+                                                        </div>
+                                                        <span className="text-sm font-medium text-white">{alt.expertName}</span>
+                                                    </div>
+                                                    <h5 className="text-white font-medium text-sm mb-1">{alt.title}</h5>
+                                                    <p className="text-white/70 text-xs line-clamp-2">{alt.subtitle}</p>
+                                                </motion.div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
                         {/* Render all cards */}
                         {reels.map((reel, index) => renderCard(reel, index))}
+
+                        {/* Mobile swipe hint */}
+                        {isMobile && isTransitioning && (
+                            <motion.div
+                                className="absolute inset-x-0 -bottom-16 flex justify-center"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                            >
+                                <div className="px-4 py-2 bg-black/50 backdrop-blur-sm rounded-full text-xs text-white/80">
+                                    {swipeDirection === 'left' ? '→ Next' : swipeDirection === 'right' ? '← Previous' : ''}
+                                </div>
+                            </motion.div>
+                        )}
                     </div>
                 </div>
 
-                {/* Card pagination indicators */}
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center z-20">
-                    <div className="flex space-x-2">
-                        {reels.map((_, i) => (
+                {/* Enhanced pagination with reel type indicators */}
+                <div className="absolute -bottom-8 left-0 right-0 flex justify-center z-20">
+                    <div className="flex items-center space-x-2">
+                        {reels.map((reel, i) => (
                             <motion.button
                                 key={i}
-                                className="w-2 h-2 rounded-full focus:outline-none"
-                                style={{
-                                    backgroundColor: i === currentIndex ? 'white' : 'rgba(255, 255, 255, 0.3)',
-                                    boxShadow: i === currentIndex ? '0 0 8px rgba(255, 255, 255, 0.5)' : 'none'
-                                }}
-                                whileHover={{ scale: 1.5 }}
+                                className="relative focus:outline-none"
+                                whileHover={{ scale: 1.2 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -568,7 +531,15 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
                                         setIsPlaying(true);
                                     }
                                 }}
-                            />
+                            >
+                                <div className={`w-3 h-3 rounded-full transition-all duration-300 ${i === currentIndex
+                                    ? 'bg-white shadow-lg scale-110'
+                                    : 'bg-white/30 hover:bg-white/50'
+                                    }`} />
+                                {reel.isGenerated && (
+                                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full" />
+                                )}
+                            </motion.button>
                         ))}
                     </div>
                 </div>
@@ -584,59 +555,5 @@ export default function ReelsDeck({ reels, initialIndex = 0 }: ReelsDeckProps) {
                 expertUuid={currentReel?.expertUuid}
             />
         </>
-    );
-}
-
-// Alternative Perspectives Component
-function AlternativePerspectives({
-    alternatives,
-    isLoading,
-    onClose
-}: {
-    alternatives: ReelData[];
-    isLoading: boolean;
-    onClose: () => void;
-}) {
-    return (
-        <motion.div
-            className="absolute inset-x-4 top-16 bg-black/80 backdrop-blur-md rounded-2xl p-4 z-40"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-        >
-            <div className="flex justify-between items-center mb-4">
-                <h4 className="text-lg font-semibold text-white">More Perspectives</h4>
-                <button
-                    onClick={onClose}
-                    className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30"
-                >
-                    ×
-                </button>
-            </div>
-
-            {isLoading ? (
-                <div className="space-y-3">
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className="bg-white/10 rounded-lg p-3 animate-pulse">
-                            <div className="h-4 bg-white/20 rounded mb-2"></div>
-                            <div className="h-3 bg-white/20 rounded w-3/4"></div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {alternatives.map((alt) => (
-                        <div key={alt.id} className="bg-white/10 rounded-lg p-3 hover:bg-white/20 transition-colors">
-                            <div className="flex items-center space-x-2 mb-2">
-                                <div className="w-4 h-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-400"></div>
-                                <span className="text-sm font-medium text-white">{alt.expertName}</span>
-                            </div>
-                            <h5 className="text-white font-medium mb-1">{alt.title}</h5>
-                            <p className="text-white/70 text-sm line-clamp-2">{alt.subtitle}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </motion.div>
     );
 }
